@@ -1,0 +1,11 @@
+export * from './Alunos/index.alunos';
+export * from './Áreas de formação';
+export * from './Classe';
+export * from './Cursos';
+export * from './Disciplinas';
+export * from './Notas';
+export * from './Pedidos/index.Pedidos';
+export * from './Professores';
+export * from './Telefones';
+export * from './Turmas';
+export * from './Usuarios/index.Usuarios';

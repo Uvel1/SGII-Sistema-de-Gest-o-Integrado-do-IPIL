@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE `notas` ADD COLUMN `n_lista` INTEGER NULL DEFAULT 0;
