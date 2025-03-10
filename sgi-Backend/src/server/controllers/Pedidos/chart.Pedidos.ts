@@ -7,8 +7,14 @@ export const getSolicitacoes = async (req: Request, res: Response) => {
     const result = await prisma.$queryRaw<
       { estado: string; total: bigint }[]
     >`
+      SELECT estado, SUM(total) as total FROM(
       SELECT estado, COUNT(*) as total
-      FROM solicitacao_aluno
+      FROM solicitacao_escola 
+      GROUP BY estado
+      UNION ALL
+      SELECT estado, COUNT(*) as total
+      FROM solicitacao_aluno ) 
+      as combined
       GROUP BY estado
     `
 

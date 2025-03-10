@@ -4,6 +4,8 @@ import * as refreshToken from './refreshToken.Usuarios';
 import * as signUpStudent from './SignUpStudent.Usuarios';
 import * as updateProfilePic from './updateProfilePic.Usuarios';
 import * as getUserPhotos from './getUserPhotos.Usuarios';
+import * as declaração from './declaração.Usuarios';
+import * as certficado from './certificado.Pedidos';
 
 export const UsuariosController = {
   ...signIn,
@@ -11,6 +13,8 @@ export const UsuariosController = {
   ...refreshToken,
   ...signUpStudent,
   ...updateProfilePic,
-    ...getUserPhotos,
+  ...getUserPhotos,
+  ...declaração,
+  ...certficado,
 
 };

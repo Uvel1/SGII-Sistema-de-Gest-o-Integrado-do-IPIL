@@ -1,7 +1,7 @@
 import { Router } from "express";
 import multer from "multer";
 import path from 'path';
-import { AlunosController, NotasController, PedidosController, ProfessoresController, TurmasController, UsuariosController } from "../controllers/index.controllers";
+import { AlunosController, NotasController, PedidosController, ProfessoresController, TurmasController, UsuariosController, AreasDeFormaçãoController, DocumentosSubmetidosController } from "../controllers/index.controllers";
 import {authenticateJWT} from "../shared/middleware/autheticateToken.middleware"
 
 const router = Router();
@@ -34,6 +34,10 @@ router.post('/Criar_pedido',PedidosController.createValidation,PedidosController
 router.get('/Chart_pedidos',PedidosController.getSolicitacoes);
 router.get('/tabela_pedidos_alunos',PedidosController.getSolicitacoesAlunos);
 router.delete('/pedidos/:id', PedidosController.IdDeleteValidation, PedidosController.Delete);
+router.get('/docs',PedidosController.docs);
+router.delete("/documentos/:id", PedidosController.IdDeleteValidationDoc, PedidosController.DeleteDoc);
+router.get('/chart2',PedidosController.getChart2);
+router.get('/print/:id',PedidosController.IdPrintValidationDoc,PedidosController.PrintDoc);
 
 
 //Usuarios
@@ -41,6 +45,8 @@ router.post('/Cadastrar',UsuariosController.signUpValidation,UsuariosController.
 router.post('/Entrar',UsuariosController.signInValidation,UsuariosController.signIn);
 router.get('/refreshToken',UsuariosController.refreshToken);
 router.post('/Cadastrar_aluno',UsuariosController.signUpStudentValidation,UsuariosController.signUpStudent);
+router.get('/certif',UsuariosController.CertifValidation,UsuariosController.EnviarCertificado);
+router.get('/declaração',UsuariosController.declarValidation,UsuariosController.EnviarDeclaração);
 
 //turmas
 router.get('/tabela_turmas/:id',TurmasController.IdProfInValidation,TurmasController.getNotasAlunos);
@@ -64,6 +70,12 @@ router.post('/verificar',AlunosController.VerificationValidation,AlunosControlle
 router.post('/certificado',AlunosController.PedidoCertificadoValidation,AlunosController.PedidoCertificado);
 router.post('/declaracao', AlunosController.declaraçãoValidation, AlunosController.PedidoCertificado);
 router.delete('/alunos/:id', AlunosController.IdDeleteValidation, AlunosController.Delete);
+
+//áreas de formação
+router.get('/chartArea',AreasDeFormaçãoController.chartArea);
+
+//documentos submetidos
+router.get('/chartDocSub',DocumentosSubmetidosController.documentsByType);
 
 
 export {router};

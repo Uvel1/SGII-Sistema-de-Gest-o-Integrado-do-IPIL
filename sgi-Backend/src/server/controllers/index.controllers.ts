@@ -1,5 +1,5 @@
 export * from './Alunos/index.alunos';
-export * from './Áreas de formação';
+export * from './Áreas de formação/index.AreasDeFormação';
 export * from './Classe';
 export * from './Cursos';
 export * from './Disciplinas';
@@ -9,3 +9,4 @@ export * from './Professores';
 export * from './Telefones';
 export * from './Turmas';
 export * from './Usuarios/index.Usuarios';
+export * from './Documentos submetidos/index.DocumentosSubmetidos';
