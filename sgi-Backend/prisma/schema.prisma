@@ -1,0 +1,244 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model aluno_detalhes {
+  id                Int                  @id @default(autoincrement())
+  numero_processo   Int                  @unique(map: "numero_processo")
+  numero_bi         String               @unique(map: "numero_bi") @db.VarChar(15)
+  sexo              user_detalhes_sexo   @default(M)
+  data_nasc         DateTime             @db.Date
+  local_nascimento  String              @db.VarChar(100) 
+  local_emissao_bi  String              @db.VarChar(100) 
+  data_emissao_bi   DateTime            @db.Date         
+  aluno_id          Int
+  curso_id          Int
+  n_lista           Int?                 @default(0)
+  nome_pai          String               @db.VarChar(100)
+  nome_mae          String               @db.VarChar(100)
+  created_at        DateTime             @default(now()) @db.Timestamp(0)
+  updated_at        DateTime             @default(now()) @db.Timestamp(0)
+
+  @@index([aluno_id], map: "aluno_id")
+  @@index([curso_id], map: "curso_id")
+}
+
+
+model areas_formacao {
+  id         Int      @id @default(autoincrement())
+  nome       String   @unique(map: "nome") @db.VarChar(150)
+  coord_id   Int
+  created_at DateTime @default(now()) @db.Timestamp(0)
+  updated_at DateTime @default(now()) @db.Timestamp(0)
+
+  @@index([coord_id], map: "coord_id")
+}
+
+model cursos {
+  id         Int      @id @default(autoincrement())
+  nome       String   @unique(map: "nome") @db.VarChar(150)
+  areas_id   Int
+  created_at DateTime @default(now()) @db.Timestamp(0)
+  updated_at DateTime @default(now()) @db.Timestamp(0)
+
+  @@index([areas_id], map: "areas_id")
+}
+
+model disciplinas {
+  id         Int      @id @default(autoincrement())
+  nome       String   @unique(map: "nome") @db.VarChar(50)
+  created_at DateTime @default(now()) @db.Timestamp(0)
+  updated_at DateTime @default(now()) @db.Timestamp(0)
+}
+
+model documentos_submetidos {
+  id             Int                                  @id @default(autoincrement())
+  url_documento  String                               @db.VarChar(255)
+  nome_documento String                               @db.VarChar(255)
+  tipo_documento documentos_submetidos_tipo_documento
+  usuario_id     Int
+  created_at     DateTime                             @default(now()) @db.Timestamp(0)
+  updated_at     DateTime                             @default(now()) @db.Timestamp(0)
+
+  @@index([usuario_id], map: "usuario_id")
+}
+
+model notas {
+  id            Int             @id @default(autoincrement())
+  aluno_id      Int
+  disciplina_id Int
+  faltas        Int             @default(0)
+  trimestre     notas_trimestre
+  mac           Decimal         @db.Decimal(5, 2)
+  p1            Decimal         @db.Decimal(5, 2)
+  p2            Decimal         @db.Decimal(5, 2)
+  pf            Decimal?        @db.Decimal(5, 2)
+  mt            Decimal?        @db.Decimal(5, 2)
+  created_at    DateTime        @default(now()) @db.Timestamp(0)
+  updated_at    DateTime        @default(now()) @db.Timestamp(0)
+
+  @@index([aluno_id], map: "aluno_id")
+  @@index([disciplina_id], map: "disciplina_id")
+}
+
+model professor_detalhes {
+  id         Int                       @id @default(autoincrement())
+  usuario_id Int
+  numero_bi  String                    @unique(map: "numero_bi") @db.VarChar(15)
+  sexo       user_detalhes_sexo        @default(M)
+  cargo      professor_detalhes_cargo? @default(Professor)
+  telefone   Int
+  created_at DateTime                  @default(now()) @db.Timestamp(0)
+  updated_at DateTime                  @default(now()) @db.Timestamp(0)
+
+  @@index([usuario_id], map: "usuario_id")
+}
+
+model professores_disciplina {
+  id            Int      @id @default(autoincrement())
+  professor_id  Int
+  disciplina_id Int
+  created_at    DateTime @default(now()) @db.Timestamp(0)
+  updated_at    DateTime @default(now()) @db.Timestamp(0)
+
+  @@index([disciplina_id], map: "disciplina_id")
+  @@index([professor_id], map: "professor_id")
+}
+
+model professores_turmas {
+  id           Int      @id @default(autoincrement())
+  professor_id Int
+  turma_id     Int
+  created_at   DateTime @default(now()) @db.Timestamp(0)
+  updated_at   DateTime @default(now()) @db.Timestamp(0)
+
+  @@unique([professor_id, turma_id], map: "idx_prof_turma")
+  @@index([turma_id], map: "turma_id")
+}
+
+model solicitacao_aluno {
+  id               Int                       @id @default(autoincrement())
+  aluno_id         Int
+  tipo             solicitacao_aluno_tipo
+  descricao        String?                   @db.Text
+  estado           solicitacao_aluno_estado? @default(Pendente)
+  data_solicitacao DateTime                  @default(now()) @db.Timestamp(0)
+  data_resolucao   DateTime                  @default(now()) @db.Timestamp(0)
+
+  @@index([aluno_id], map: "aluno_id")
+}
+
+model solicitacao_escola {
+  id               Int                        @id @default(autoincrement())
+  usuario_id       Int
+  descricao        String                     @db.Text
+  estado           solicitacao_escola_estado? @default(Pendente)
+  data_solicitacao DateTime                   @default(now()) @db.Timestamp(0)
+  data_resolucao   DateTime                   @default(now()) @db.Timestamp(0)
+
+  @@index([usuario_id], map: "usuario_id")
+}
+
+model turma_alunos {
+  id         Int      @id @default(autoincrement())
+  aluno_id   Int
+  turma_id   Int
+  created_at DateTime @default(now()) @db.Timestamp(0)
+  updated_at DateTime @default(now()) @db.Timestamp(0)
+
+  @@unique([aluno_id, turma_id], map: "idx_turma_aluno")
+  @@index([turma_id], map: "turma_id")
+}
+
+model turmas {
+  id              Int           @id @default(autoincrement())
+  nome            String        @db.VarChar(10)
+  ano_letivo      Int           @db.Year
+  diretorTurma_id Int?
+  classe          turmas_classe
+  sala            String        @db.VarChar(4)
+  turno           turmas_turno
+  created_at      DateTime      @default(now()) @db.Timestamp(0)
+  updated_at      DateTime      @default(now()) @db.Timestamp(0)
+
+  @@index([diretorTurma_id], map: "diretorTurma_id")
+}
+
+model usuarios {
+  id              Int                      @id @default(autoincrement())
+  nome            String                   @db.VarChar(150)
+  email           String                   @unique(map: "email") @db.VarChar(255)
+  senha           String?                  @db.VarChar(255)
+  foto_perfil     String?                  @db.VarChar(255)
+  tipo_de_usuario usuarios_tipo_de_usuario
+  create_at       DateTime                 @default(now()) @db.Timestamp(0)
+  update_at       DateTime                 @default(now()) @db.Timestamp(0)
+}
+
+enum professor_detalhes_cargo {
+  Professor
+  Dir_Turma
+  Coordenador
+}
+
+enum solicitacao_aluno_tipo {
+  Certificado
+  Declaração
+  Transferência 
+  Outros
+}
+
+enum user_detalhes_sexo {
+  M
+  F
+}
+
+enum documentos_submetidos_tipo_documento {
+  Certificado
+  Declaração
+  Transferência
+  Outro
+}
+
+enum notas_trimestre {
+  PrimeiroTrimestre @map("1º Trimestre")
+  SegundoTrimestre  @map("2º Trimestre")
+  TerceiroTrimestre @map("3º Trimestre")
+}
+
+enum solicitacao_escola_estado {
+  Pendente
+  Aprovado
+  Rejeitado
+}
+
+enum solicitacao_aluno_estado {
+  Pendente
+  Aprovado
+  Rejeitado
+}
+
+enum turmas_classe {
+  DecimaClasse @map("10ª Classe")
+  DecimaPrimeiraClasse @map("11ª Classe")
+  DecimaSegundaClasse @map("12ª Classe")
+  DecimaTerceiraClasse @map("13ª Classe")
+}
+
+enum usuarios_tipo_de_usuario {
+  Secretaria
+  Coordenação
+  Professor
+  Aluno
+}
+
+enum turmas_turno {
+  Manhã
+  Tarde
+  Noite
+}
