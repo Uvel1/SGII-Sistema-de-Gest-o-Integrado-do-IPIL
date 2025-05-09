@@ -16,7 +16,6 @@ export const validation: TValidation = (getAllSchemas) => async (req, res, next)
     const schemas = getAllSchemas((schema) => schema);
     const errorsResult: Record<string, Record<string, string>> = {};
 
-    // Validação de cada schema
     Object.entries(schemas).forEach(([key, schema]) => {
         try {
             schema.validateSync(req[key as TProperty], { abortEarly: false });
@@ -33,7 +32,6 @@ export const validation: TValidation = (getAllSchemas) => async (req, res, next)
         }
     });
 
-    // Se houver erros, retorna resposta com erro
     if (Object.entries(errorsResult).length === 0) {
         return next();
     } else {

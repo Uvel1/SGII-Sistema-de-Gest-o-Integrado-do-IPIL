@@ -21,7 +21,6 @@ export const signIn = async (req: Request<{}, {}, IBodyProps>, res: Response) =>
   const { email, senha } = req.body;
 
   try {
-    // Busca o usuário pelo email
     const usuario = await prisma.usuarios.findUnique({
       where: { email: email },
     });
@@ -67,7 +66,7 @@ export const signIn = async (req: Request<{}, {}, IBodyProps>, res: Response) =>
         select: {
             tipo_de_usuario: true, 
         },
-        distinct: ['tipo_de_usuario'], // Para evitar repetições
+        distinct: ['tipo_de_usuario'], 
       });
 
     // if(userType.length > 0 && userType[0].tipo === "Professor")
@@ -84,7 +83,6 @@ export const signIn = async (req: Request<{}, {}, IBodyProps>, res: Response) =>
       });
     }
     
-    // Retorna os tokens para o cliente
      res.status(StatusCodes.OK).json({ accessToken, refreshToken, userType });
     
   } catch (error) {

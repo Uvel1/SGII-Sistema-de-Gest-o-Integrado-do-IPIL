@@ -4,6 +4,7 @@ import * as refreshToken from './refreshToken.Users';
 import * as signUpStudent from './SignUpStudent.Users';
 import * as updateProfilePic from './updateProfilePic.Users';
 import * as getUserPhotos from './getUserPhotos.Users';
+import * as GetUsers from './table.Users';
 import * as declaração from './declaration.Users';
 import * as certficado from './certificate.Users';
 import * as email from './SendEmailUsers';
@@ -15,6 +16,7 @@ export const UsersController = {
   ...signUpStudent,
   ...updateProfilePic,
   ...getUserPhotos,
+  ...GetUsers,
   ...declaração,
   ...certficado,
   ...email,

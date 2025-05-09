@@ -4,7 +4,7 @@ import { StatusCodes } from "http-status-codes";
 import * as yup from "yup";
 import { validation } from "../../shared/middleware/index.middleware";
 import { prisma } from "../../config/prisma.config";
-import { AlunosController } from "./index.StudentsDetails"; // ajuste o caminho conforme necessário
+import { AlunosController } from "./index.StudentsDetails";
 
 interface IParams {
   id: number;
@@ -23,7 +23,7 @@ export const IdDeleteValidation = validation((getSchema) => ({
 }));
 
 export const Delete = async (req: Request<IParams>, res: Response) => {
-  const id = Number(req.params.id); // Converte id para número
+  const id = Number(req.params.id);
 
   if (isNaN(id)) {
     res.status(StatusCodes.BAD_REQUEST).json({
@@ -32,7 +32,6 @@ export const Delete = async (req: Request<IParams>, res: Response) => {
   }
 
   try {
-    // Verifica se a solicitação existe
     const aluno = await prisma.aluno_detalhes.findUnique({
       where: { id },
     });
@@ -43,12 +42,10 @@ export const Delete = async (req: Request<IParams>, res: Response) => {
       });
     }
 
-    // Deleta a solicitação permanentemente do banco de dados
     await prisma.aluno_detalhes.delete({
       where: { id },
     });
 
-    // Chama a função de atualização via WebSocket
     await AlunosController.sendStudentsUpdate();
 
     res.status(StatusCodes.OK).json({ message: "Solicitação excluída permanentemente com sucesso." });

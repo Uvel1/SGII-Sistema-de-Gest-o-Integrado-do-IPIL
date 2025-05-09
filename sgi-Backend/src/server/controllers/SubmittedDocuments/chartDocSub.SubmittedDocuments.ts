@@ -1,4 +1,4 @@
-// arquivo: documentsByType.ts (ou renomeie conforme sua estrutura)
+
 import { Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
 import { prisma } from "../../config/prisma.config";

@@ -14,12 +14,12 @@ import { prisma } from '../../config/prisma.config';
         numero_bi: true,
         sexo: true,
         email: true,
-        data_nasc: true, // Para calcular a idade
+        data_nasc: true,
         turmas: {
           select: {
             turma: {
               select: {
-                nome: true, // Nome da turma
+                nome: true, 
               },
             },
           },
@@ -36,7 +36,6 @@ import { prisma } from '../../config/prisma.config';
       },
     });
 
-  // Calcula a idade e transforma o resultado
   const result = alunosComNotas.map(aluno => ({
     numLista: aluno.id,
     numProc: aluno.numero_processo,

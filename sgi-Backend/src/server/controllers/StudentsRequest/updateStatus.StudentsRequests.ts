@@ -13,7 +13,6 @@ interface IBody {
   estado: "Pendente" | "Aprovado" | "Rejeitado";
 }
 
-// Validação dos parâmetros e do corpo da requisição
 export const UpdateSolicitacaoValidation = validation((getSchema) => ({
   params: getSchema<IParams>(
     yup.object().shape({
@@ -34,13 +33,11 @@ export const UpdateSolicitacaoValidation = validation((getSchema) => ({
   ),
 }));
 
-// Endpoint HTTP para atualizar o estado da solicitação de aluno
 export const updateSolicitacaoAluno = async (req: Request, res: Response) => {
   const { id } = req.params;
   const { estado } = req.body;
 
   try {
-    // Verifica se a solicitação existe
     const solicitacaoExiste = await prisma.solicitacao_aluno.findUnique({
       where: { id: Number(id) },
     });
@@ -51,7 +48,6 @@ export const updateSolicitacaoAluno = async (req: Request, res: Response) => {
         .json({ error: "Solicitação não encontrada" });
     }
 
-    // Atualiza o estado e a data de resolução
     const solicitacaoAtualizada = await prisma.solicitacao_aluno.update({
       where: { id: Number(id) },
       data: {
@@ -61,7 +57,6 @@ export const updateSolicitacaoAluno = async (req: Request, res: Response) => {
       select: { id: true, estado: true, data_resolucao: true },
     });
 
-    // Envia a atualização via WebSocket para os clientes conectados
     sendSolicitacoesUpdate();
 
     return res.status(StatusCodes.OK).json({

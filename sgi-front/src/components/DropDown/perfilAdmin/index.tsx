@@ -56,7 +56,6 @@ export function PerfilAdmin() {
     }
   }, [router]);
 
-  // Buscar a foto do usuário no backend assim que tivermos o userId e accessToken
   useEffect(() => {
     if (userId && accessToken) {
       const fetchPhoto = async () => {

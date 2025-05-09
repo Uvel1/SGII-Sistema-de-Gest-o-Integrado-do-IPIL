@@ -10,6 +10,8 @@ import {
   School2,
   Send,
   ShoppingBag,
+  UserRoundPlus,
+  TableOfContents,
   Users2,
 } from "lucide-react";
 import {
@@ -37,10 +39,8 @@ export function AppSidebar({ userRole }: AppSidebarProps) {
   const [activeSubItem, setActiveSubItem] = useState<string | null>(null);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 
-  // Define o prefixo de rota com base no tipo de usuário
   const basePath = userRole === "admin" ? "/admin" : "/admin";
 
-  // Mapeamento das rotas para identificar menus e sub-itens
   const routeMapping: Record<string, { menu: string; subItem?: string }> = {
     [`${basePath}`]: { menu: "home" },
     [`${basePath}/pedidos/recebidos`]: { menu: "pedidos", subItem: "recebidos" },
@@ -50,10 +50,10 @@ export function AppSidebar({ userRole }: AppSidebarProps) {
     [`${basePath}/turmas/professores`]: { menu: "turmas", subItem: "professores" },
     [`${basePath}/documentos`]: { menu: "documentos" },
     [`${basePath}/coordenacao`]: { menu: "coordenacao" },
-    [`${basePath}/usuarios`]: { menu: "usuarios" },
+    [`${basePath}/usuarios/criar`]: { menu: "usuarios", subItem: "criar" },
+    [`${basePath}/usuarios/gerir`]: { menu: "usuarios", subItem: "gerir" },
   };
 
-  // Redirecionamento caso o prefixo na URL não corresponda ao tipo de usuário
   useEffect(() => {
     if (userRole === "admin" && pathname.startsWith("/admin")) {
       router.replace(pathname.replace("/admin", "/admin"));
@@ -63,7 +63,6 @@ export function AppSidebar({ userRole }: AppSidebarProps) {
     }
   }, [pathname, router, userRole]);
 
-  // Atualiza o menu ativo com base na rota atual para fins de destaque
   useEffect(() => {
     const currentRoute = routeMapping[pathname];
     if (currentRoute) {
@@ -75,7 +74,6 @@ export function AppSidebar({ userRole }: AppSidebarProps) {
     }
   }, [pathname, routeMapping]);
 
-  // Controla a abertura dos dropdowns de forma separada do activeMenu
   const toggleDropdown = (menu: string) => {
     setOpenDropdown(openDropdown === menu ? null : menu);
   };
@@ -250,18 +248,51 @@ export function AppSidebar({ userRole }: AppSidebarProps) {
               </SidebarMenuItem>
 
               <SidebarMenuItem>
-                <Link
-                  href={`${basePath}/usuarios`}
-                  className={`flex flex-row space-x-2 items-center p-2 rounded-lg ${
+                <div
+                  className={`flex justify-between items-center p-2 rounded-lg cursor-pointer space-x-2 ${
                     activeMenu === "usuarios"
                       ? "bg-white text-blue-700"
                       : "hover:bg-white hover:text-blue-700"
                   }`}
-                  onClick={() => handleSetActive("usuarios")}
+                  onClick={() => toggleDropdown("usuarios")}
                 >
-                  <Users2 />
-                  <span className="text-sm">Usuários</span>
-                </Link>
+                  <div className="flex items-center space-x-2">
+                    <Users2 />
+                    <span className="text-sm">Usuários</span>
+                  </div>
+                </div>
+                {openDropdown === "usuarios" && (
+                  <SidebarMenuSub>
+                    <SidebarMenuSubItem>
+                      <Link
+                        href={`${basePath}/usuarios/criar`}
+                        className={`flex items-center space-x-2 p-1 rounded-lg ${
+                          activeSubItem === "create"
+                            ? "text-blue-700"
+                            : "hover:text-blue-700"
+                        }`}
+                        onClick={() => handleSetActive("usuarios", "criar")}
+                      >
+                        <UserRoundPlus className="w-4 h-4" />
+                        <span className="text-sm">Criar</span>
+                      </Link>
+                    </SidebarMenuSubItem>
+                    <SidebarMenuSubItem>
+                      <Link
+                        href={`${basePath}/usuarios/gerenciar`}
+                        className={`flex items-center space-x-2 p-1 rounded-lg ${
+                          activeSubItem === "manage"
+                            ? "text-blue-700"
+                            : "hover:text-blue-700"
+                        }`}
+                        onClick={() => handleSetActive("usuarios", "gerenciar")}
+                      >
+                        <TableOfContents className="w-4 h-4" />
+                        <span className="text-sm">Gerenciar</span>
+                      </Link>
+                    </SidebarMenuSubItem>
+                  </SidebarMenuSub>
+                )}
               </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>

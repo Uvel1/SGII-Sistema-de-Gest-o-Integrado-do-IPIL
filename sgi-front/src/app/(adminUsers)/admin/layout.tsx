@@ -1,12 +1,12 @@
 "use client"; // Torna o componente um Client Component
 
 import { useState, useEffect } from "react";
-import { usePathname } from "next/navigation"; // Importação correta no App Router
+import { usePathname } from "next/navigation"; 
 import { AppSidebar } from "@/components/SideBar/dashboard/admin";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { PerfilAdmin } from "@/components/DropDown/perfilAdmin";
 import { MobileSidebar } from "@/components/SideBar/dashboard/admin/mobile";
-import Loader from "@/components/Loader"; // Importando o loader
+import Loader from "@/components/Loader"; 
 
 export default function RootLayout({
   children,
@@ -14,7 +14,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   const [loading, setLoading] = useState(false);
-  const pathname = usePathname(); // Obtém a rota atual
+  const pathname = usePathname(); 
 
   // Simula a mudança de rota para ativar o loader
   useEffect(() => {

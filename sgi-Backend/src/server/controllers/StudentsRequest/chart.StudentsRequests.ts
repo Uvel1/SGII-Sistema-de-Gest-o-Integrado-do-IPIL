@@ -1,30 +1,45 @@
-import { Request, Response } from "express"
-import { StatusCodes } from "http-status-codes"
-import { prisma } from "../../config/prisma.config"
+import { Request, Response } from "express";
+import { StatusCodes } from "http-status-codes";
+import { prisma } from "../../config/prisma.config";
 
 export const GetRequests = async (req: Request, res: Response) => {
   try {
-    const result = await prisma.$queryRaw<
-      { estado: string; total: bigint }[]
-    >`
-      SELECT estado, SUM(total) as total FROM(
-      SELECT estado, COUNT(*) as total
-      FROM solicitacao_escola 
-      GROUP BY estado
-      UNION ALL
-      SELECT estado, COUNT(*) as total
-      FROM solicitacao_aluno ) 
-      as combined
-      GROUP BY estado
-    `
-    const safeResult = result.map(row => ({
-      estado: row.estado,
-      total: Number(row.total),
-    }))
+    const [escolaResults, alunoResults] = await Promise.all([
+      prisma.solicitacao_escola.groupBy({
+        by: ['estado'],
+        _count: { estado: true },
+      }),
+      prisma.solicitacao_aluno.groupBy({
+        by: ['estado'],
+        _count: { estado: true },
+      }),
+    ]);
 
-    res.status(StatusCodes.OK).json(safeResult);
+    const combinedResults: Record<string, number> = {};
+
+    const processResults = (results: any[]) => {
+      results.forEach((item) => {
+        const estado = item.estado;
+        const count = item._count.estado;
+        combinedResults[estado] = (combinedResults[estado] || 0) + count;
+      });
+    };
+
+    processResults(escolaResults);
+    processResults(alunoResults);
+
+    const formattedResults = Object.entries(combinedResults).map(
+      ([estado, total]) => ({
+        estado,
+        total: Number(total),
+      })
+    );
+
+    res.status(StatusCodes.OK).json(formattedResults);
   } catch (error) {
-    console.error("Erro ao buscar dados de solicitações:", error)
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: "Erro ao buscar dados de solicitações" })
+    console.error("Erro ao buscar dados de solicitações:", error);
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ 
+      error: "Erro ao buscar dados de solicitações" 
+    });
   }
-}
+};

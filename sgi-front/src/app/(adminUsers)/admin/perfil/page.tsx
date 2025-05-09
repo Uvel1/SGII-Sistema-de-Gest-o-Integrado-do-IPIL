@@ -34,7 +34,6 @@ export default function PerfilAdmin() {
     }
   }, []);
 
-  // Assim que os dados do usuário estiverem disponíveis, busca a foto via GET
   useEffect(() => {
     if (userData && accessToken) {
       const fetchUserPhoto = async () => {

@@ -3,7 +3,6 @@ import { StatusCodes } from "http-status-codes";
 import { prisma } from "../../config/prisma.config";
 import { wss } from "../../../index";
 
-// Função que envia a atualização via WebSocket
 export async function sendTeachersUpdate() {
     try {
         const result = await prisma.$queryRaw`
@@ -67,7 +66,6 @@ WHERE u.tipo_de_usuario = 'Professor'
 ORDER BY u.nome;
     `;
 
-    // Conversão de valores BigInt para number (para evitar erro na serialização do JSON)
     const safeResult = (result as any[]).map((row) =>
       Object.fromEntries(
         Object.entries(row).map(([key, value]) =>

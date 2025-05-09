@@ -26,16 +26,15 @@ export const signUpStudent = async (req: Request<{}, {}, IUsuario>, res: Respons
     const { nome, senha, email, tipo_de_usuario } = req.body;
 
     console.log("Dados recebidos:", req.body);
-    // Criptografar a senha
+
     const hashedPassword = await PasswordCrypto.hashPassword(senha);
 
-    // Criar o usuário no banco de dados com a senha criptografada
     const usuario = await prisma.usuarios.create({
       data: {
-        nome: nome,        // Passando o nome corretamente
-        senha: hashedPassword, // Usando a senha criptografada
+        nome: nome,        
+        senha: hashedPassword, 
         email: email,
-        tipo_de_usuario: tipo_de_usuario,        // Passando o tipo corretamente
+        tipo_de_usuario: tipo_de_usuario,     
       },
     });
 

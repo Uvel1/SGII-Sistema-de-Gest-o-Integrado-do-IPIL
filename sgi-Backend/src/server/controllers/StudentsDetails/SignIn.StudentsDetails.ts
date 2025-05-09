@@ -23,7 +23,6 @@ export const signIn = async (req: Request<{}, {}, IBodyProps>, res: Response) =>
   const { numero_bi, senha } = req.body;
 
   try {
-    // Busca o usuário pelo email
     const aluno = await prisma.aluno_detalhes.findUnique({
       where: { numero_bi : numero_bi },
       select: {aluno_id:true,curso_id:true,numero_processo:true}

@@ -18,23 +18,24 @@ interface DetalhesPedidosRecebidosProps {
   id: number;
 }
 
-// Extendemos o tipo para incluir status, resposta e tipo (documento solicitado)
 export type Pedido = {
   desc: string;
-  status?: string;    // Ex.: "Pendente", "Aprovado", "Rejeitado"
-  resposta?: string;  // Justificativa ou resposta do admin
-  tipo?: string;      // Ex.: "Certificado", "Declaracao", "Transferência", etc.
+  status?: string;
+  resposta?: string;
+  tipo?: string;
+  documentoUrl?: string; // URL do ficheiro XLS aprovado
 };
 
 export function DetalhesPedidosRecebidos({ id }: DetalhesPedidosRecebidosProps) {
   const [data, setData] = React.useState<Pedido[]>([]);
   const [selectedStatus, setSelectedStatus] = React.useState<string | undefined>("");
   const [responseText, setResponseText] = React.useState<string>("");
+  const [file, setFile] = React.useState<File | null>(null);
+  const [loadingImport, setLoadingImport] = React.useState<boolean>(false);
 
   const fetchData = async () => {
     try {
       console.log("Recebendo detalhes do pedido com id:", id);
-      // Aqui informamos ao Axios que o retorno é um array de Pedido
       const response = await axios.get<Pedido[]>(`http://localhost:3333/pedidos_desc/${id}`);
       setData(response.data);
       if (response.data.length > 0) {
@@ -50,13 +51,12 @@ export function DetalhesPedidosRecebidos({ id }: DetalhesPedidosRecebidosProps) 
     setSelectedStatus(newStatus);
 
     try {
-      // Atualiza o status do pedido
       await axios.put(`http://localhost:3333/update_pedido/${id}`, { estado: newStatus });
       toast.success(`Status atualizado para ${newStatus}!`);
-      
-      // Se o novo status for "Aprovado", verifica o tipo do documento e aciona a rota específica
+
+      // --- Código antigo de geração de PDF comentado por precaução ---
+      /*
       if (newStatus === "Aprovado") {
-        // Obtemos os detalhes atualizados para garantir que temos o tipo correto
         const updatedResponse = await axios.get<Pedido[]>(`http://localhost:3333/pedidos_desc/${id}`);
         const pedidoAtual = updatedResponse.data[0];
         const docType = pedidoAtual?.tipo;
@@ -82,8 +82,7 @@ export function DetalhesPedidosRecebidos({ id }: DetalhesPedidosRecebidosProps) 
           toast.error("Tipo de documento não identificado.");
         }
       }
-
-      // Atualiza os dados do componente
+      */
       fetchData();
     } catch (error) {
       console.error("Erro ao atualizar status:", error);
@@ -91,13 +90,37 @@ export function DetalhesPedidosRecebidos({ id }: DetalhesPedidosRecebidosProps) 
     }
   };
 
+  const handleImport = async () => {
+    if (!file) {
+      toast.error("Seleciona um ficheiro primeiro");
+      return;
+    }
+    setLoadingImport(true);
+    const form = new FormData();
+    form.append("file", file);
+    try {
+      await axios.post(
+        `http://localhost:3333/pedidos/${id}/import`,
+        form,
+        { headers: { "Content-Type": "multipart/form-data" } }
+      );
+      toast.success("Documento XLS importado com sucesso!");
+      setFile(null);
+      fetchData();
+    } catch (err) {
+      console.error("Erro ao importar XLS:", err);
+      toast.error("Falha ao importar ficheiro");
+    } finally {
+      setLoadingImport(false);
+    }
+  };
+
   const handleSendResponse = async () => {
     try {
-      // Envia a resposta para o endpoint que trata do envio por email
       await axios.post(`http://localhost:3333/enviar_email/${id}`, { resposta: responseText });
       toast.success("Resposta enviada por email com sucesso!");
-      setResponseText(""); // Limpa o campo após o envio
-      fetchData(); // Atualiza os dados (caso o backend registre a resposta)
+      setResponseText("");
+      fetchData();
     } catch (error) {
       console.error("Erro ao enviar resposta:", error);
       toast.error("Erro ao enviar resposta.");
@@ -120,7 +143,6 @@ export function DetalhesPedidosRecebidos({ id }: DetalhesPedidosRecebidosProps) 
           <DialogTitle className="text-blue-700">Detalhes do Pedido</DialogTitle>
           <DialogDescription asChild>
             <div className="space-y-4">
-              {/* Seção de Descrição */}
               <div>
                 <h3 className="font-semibold">Descrição:</h3>
                 {data.length > 0 ? (
@@ -136,7 +158,6 @@ export function DetalhesPedidosRecebidos({ id }: DetalhesPedidosRecebidosProps) 
                 )}
               </div>
 
-              {/* Seção de Status com DropDown */}
               <div>
                 <h3 className="font-semibold">Alterar Status:</h3>
                 <select
@@ -150,7 +171,39 @@ export function DetalhesPedidosRecebidos({ id }: DetalhesPedidosRecebidosProps) 
                 </select>
               </div>
 
-              {/* Seção de Resposta do Admin (exibida, se existir) */}
+              {selectedStatus === "Aprovado" && !data[0]?.documentoUrl && (
+                <div>
+                  <h3 className="font-semibold">Importar Documento Final (.xlsx):</h3>
+                  <input
+                    type="file"
+                    accept=".xls,.xlsx"
+                    onChange={(e) => setFile(e.target.files?.[0] || null)}
+                    className="mt-2"
+                  />
+                  <Button
+                    onClick={handleImport}
+                    disabled={!file || loadingImport}
+                    className="mt-2 bg-green-600 hover:bg-green-700"
+                  >
+                    {loadingImport ? 'Importando...' : 'Importar XLS'}
+                  </Button>
+                </div>
+              )}
+
+              {/* Link de download do documento final, se existir */}
+              {data[0]?.documentoUrl && (
+                <div>
+                  <h3 className="font-semibold">Documento Aprovado:</h3>
+                  <a
+                    href={data[0].documentoUrl}
+                    target="_blank"
+                    className="text-blue-600 underline"
+                  >
+                    Descarregar Ficheiro
+                  </a>
+                </div>
+              )}
+
               {data.length > 0 && data[0].resposta && (
                 <div>
                   <h3 className="font-semibold">Resposta do Admin:</h3>
@@ -158,7 +211,6 @@ export function DetalhesPedidosRecebidos({ id }: DetalhesPedidosRecebidosProps) 
                 </div>
               )}
 
-              {/* Área para escrever a resposta para envio por email */}
               <div>
                 <h3 className="font-semibold">Responder Pedido (Enviar Email):</h3>
                 <textarea

@@ -44,7 +44,6 @@ export const Verification = async (req: Request<{}, {}, IBodyProps>, res: Respon
   const { numero_bi, email, nome } = req.body;
 
   try {
-    // Busca os detalhes do aluno para obter o id do usuário
     const aluno = await prisma.aluno_detalhes.findUnique({
       where: { numero_bi },
       select: { aluno_id: true },
@@ -56,7 +55,6 @@ export const Verification = async (req: Request<{}, {}, IBodyProps>, res: Respon
       });
     }
 
-    // Busca o usuário associado ao aluno e confere o nome
     const alunoEmail = await prisma.usuarios.findUnique({
       where: { id: aluno.aluno_id },
       select: { email: true, nome: true, senha: true },
@@ -68,25 +66,20 @@ export const Verification = async (req: Request<{}, {}, IBodyProps>, res: Respon
       });
     }
 
-    // Verifica se o campo senha já possui um valor (ou seja, já foi verificado)
-    // Supondo que, se não verificado, o campo esteja como uma string vazia ("")
     if (alunoEmail.senha && alunoEmail.senha !== " ") {
       res.status(StatusCodes.UNAUTHORIZED).json({
         errors: { default: "Esta conta já foi verificada" },
       });
     }
 
-    // Gerar senha aleatória
     const randomPassword = crypto.randomBytes(6).toString("hex");
     const hashedPassword = await PasswordCrypto.hashPassword(randomPassword);
 
-    // Atualizar senha na base de dados (marcando a conta como verificada)
     await prisma.usuarios.update({
       where: { email: alunoEmail.email },
       data: { senha: hashedPassword },
     });
 
-    // Enviar email com a senha
     await sendEmail(
       email,
       "Verificação de Conta",

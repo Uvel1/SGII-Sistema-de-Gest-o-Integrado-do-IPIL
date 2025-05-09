@@ -2,14 +2,13 @@ import { Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
 import { prisma } from "../../config/prisma.config";
 
-// Define a URL base do servidor (pode vir de uma variável de ambiente)
 const BASE_URL = "http://localhost:3333";
 
 export const getTabelaAlunos = async (req: Request, res: Response) => {
   try {
     const result = await prisma.$queryRaw`
       SELECT
-        ad.id AS id,  -- ID dos detalhes do aluno
+        ad.id AS id,  
         u.foto_perfil AS foto,
         u.id AS numLista,
         ad.numero_processo AS numProc,
@@ -31,7 +30,6 @@ export const getTabelaAlunos = async (req: Request, res: Response) => {
       ORDER BY u.id;
     `;
 
-    // Converte valores BigInt para number (se houver) e monta a URL completa para a foto
     const safeResult = (result as any[]).map((row) => {
       const newRow = Object.fromEntries(
         Object.entries(row).map(([key, value]) =>
@@ -39,7 +37,6 @@ export const getTabelaAlunos = async (req: Request, res: Response) => {
         )
       );
 
-      // Se a foto existir, for uma string e não iniciar com "http", monta a URL completa
       if (
         newRow.foto &&
         typeof newRow.foto === "string" &&

@@ -23,106 +23,108 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { ApagarDocumento } from "@/components/Alerts/apagar/documents";
+import { DetalhesPedidosRecebidos } from "@/components/Dialog/detalhes/pedido/recebido";
+import { ApagarPedidoRecebido } from "@/components/Alerts/apagar/pedidos/recebido";
+import { AvatarImage, Avatar, AvatarFallback } from "@/components/ui/avatar";
 import axios from "axios";
-import { Printer, ArrowDownToLine } from "lucide-react";
+import { ResponderPedido } from "@/components/Dialog/responderPedidos";
 
 export type Student = {
   id: number;
   nome: string;
-  ano_de_termino: number;
-  nome_documento: string;
-  tipo_documento: string;
+  email: string;
+  senha: string;
+  foto: string;
+  tipo: string;
+  created_at:number;
+  updated_at:number;
 };
 
 export const columns: ColumnDef<Student>[] = [
   {
+      accessorKey: "foto",
+      header: "Foto",
+      cell: ({ row }) => {
+        let photoUrl = row.getValue("foto") as string;
+    
+        // Se o valor estiver vazio, use um fallback local (ou uma imagem padrão)
+        if (!photoUrl) {
+          photoUrl = "/fallback.png";
+        } else if (!photoUrl.startsWith("http")) {
+          // Se for um caminho relativo, concatene com a URL base
+          photoUrl = `http://localhost:3333/uploads/${photoUrl}`;
+        }
+    
+        return (
+          <div>
+            <Avatar>
+              <AvatarImage
+                src={photoUrl}
+                alt={`Foto de ${row.getValue("nome")}`}
+              />
+              <AvatarFallback className="bg-blue-700 text-white">
+                {(row.getValue("nome") as string)?.[0]?.toUpperCase() || "NA"}
+              </AvatarFallback>
+            </Avatar>
+          </div>
+        );
+      },
+    },
+  {
     accessorKey: "nome",
-    header: "Nome do Aluno",
+    header: "Nome",
     cell: ({ row }) => <div>{row.getValue("nome")}</div>,
   },
   {
-    accessorKey: "ano_de_termino",
-    header: "Ano de Termino",
-    cell: ({ row }) => <div>{row.getValue("ano_de_termino")}</div>,
+    accessorKey: "Email",
+    header: "Email",
+    cell: ({ row }) => <div>{row.original.email}</div>,
   },
   {
-    accessorKey: "nome_documento",
-    header: "Nome do Documento",
-    cell: ({ row }) => <div>{row.getValue("nome_documento")}</div>,
-  },
-  {
-    accessorKey: "tipo_documento",
-    header: "Tipo de Documento",
-    cell: ({ row }) => <div>{row.getValue("tipo_documento")}</div>,
+    accessorKey: "tipo",
+    header: "Tipo",
+    cell: ({ row }) => <div>{row.getValue("tipo")}</div>,
   },
   {
     id: "actions",
     header: "Interação",
     cell: ({ row }) => {
       const student = row.original;
-      const handlePrint = () => {
-        const printUrl = `http://localhost:3333/print/${student.id}`;
-        const printWindow = window.open(printUrl, "_blank");
-        if (printWindow) {
-          printWindow.onload = () => {
-            printWindow.print();
-          };
-        } else {
-          console.error("Não foi possível abrir a janela de impressão.");
-        }
-      };
-
       return (
         <div className="w-full md:space-x-2 space-y-2 md:space-y-0">
-          <Button
-            className="h-8 w-8 p-0 bg-blue-500 hover:bg-blue-600"
-            onClick={handlePrint}
-          >
-          <Printer />
-          </Button>
-          
-          <a
-            href={`http://localhost:3333/documents/download/${student.id}`}
-            download={student.nome_documento}
-          >
-            <Button className="h-8 px-2 bg-green-600 hover:bg-green-700 text-white">
-              <ArrowDownToLine/>
-            </Button>
-          </a>
-
-          <ApagarDocumento id={student.id} />
+          <DetalhesPedidosRecebidos id={student.id} />
+          <ResponderPedido />
+          <ApagarPedidoRecebido id={student.id} />
         </div>
       );
     },
   },
 ];
 
-export function TableDocumentosAdmin() {
+export function TableUsuarios() {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
-  const [selectedDocumentos, setSelectedDocumentos] = React.useState("All");
+  const [selectedTipo, setSelectedTipo] = React.useState("All");
   const [nameFilter, setNameFilter] = React.useState("");
   const [data, setData] = React.useState<Student[]>([]);
 
-  React.useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axios.get(`http://localhost:3333/docs`);
-        setData(response.data as Student[]);
-        console.log("Dados:", response.data);
-      } catch (error) {
-        console.error("Erro ao buscar os dados:", error);
-      }
-    };
+  const fetchData = async () => {
+    try {
+      const response = await axios.get("http://localhost:3333/tabela_usuarios");
+      setData(response.data as Student[]);
+    } catch (error) {
+      console.error("Erro ao buscar os dados:", error);
+    }
+  };
 
+  React.useEffect(() => {
     fetchData();
   }, []);
 
   React.useEffect(() => {
-    const socket = new WebSocket("ws://localhost:3333/docs");
+    const socket = new WebSocket("ws://localhost:3333/tabela_pedidos_alunos");
 
     socket.onopen = () => {
       console.log("Conectado ao WebSocket!");
@@ -131,7 +133,7 @@ export function TableDocumentosAdmin() {
     socket.onmessage = (event) => {
       try {
         const message = JSON.parse(event.data);
-        if (message.type === "updateDocumentos") {
+        if (message.type === "updateSolicitacoes") {
           console.log("Atualização recebida via WebSocket:", message.data);
           setData(message.data);
         }
@@ -147,16 +149,11 @@ export function TableDocumentosAdmin() {
 
   const filteredData = React.useMemo(() => {
     return data.filter((student) => {
-      const matchesDocumentos =
-        selectedDocumentos === "All" ||
-        student.nome_documento === selectedDocumentos;
-      const matchesName = student.nome
-        .toLowerCase()
-        .includes(nameFilter.toLowerCase());
-
-      return matchesDocumentos && matchesName;
+      const matchesTurma = selectedTipo === "All" || student.tipo === selectedTipo;
+      const matchesName = student.nome.toLowerCase().includes(nameFilter.toLowerCase());
+      return matchesTurma && matchesName;
     });
-  }, [data, selectedDocumentos, nameFilter]);
+  }, [data, selectedTipo, nameFilter]);
 
   const table = useReactTable({
     data: filteredData,
@@ -180,22 +177,23 @@ export function TableDocumentosAdmin() {
   return (
     <>
       <div className="flex flex-col md:flex-row md:items-center justify-between py-4 md:space-x-4">
-        <div className="flex flex-row items-center py-4 space-x-4 w-full">
-          <select
-            value={selectedDocumentos}
-            onChange={(e) => setSelectedDocumentos(e.target.value)}
-            className="border rounded-lg p-2 outline-blue-700"
-          >
-            <option value="All">Todos anos</option>
-            <option value="2017">2017</option>
-          </select>
-          <Input
-            placeholder="Filtrar pelo nome do aluno..."
-            value={nameFilter}
-            onChange={(e) => setNameFilter(e.target.value)}
-            className="max-w-sm outline-blue-700 border-blue-700"
-          />
-        </div>
+        <select
+          value={selectedTipo}
+          onChange={(e) => setSelectedTipo(e.target.value)}
+          className="border rounded-lg p-2 outline-blue-700"
+        >
+          <option value="All">Todos usuários</option>
+          <option value="Secretaria">secretario/a</option>
+          <option value="Coordenação">Coordenador/a</option>
+          <option value="Professor">Professor/a</option>
+          <option value="Aluno">Aluno/a</option>
+        </select>
+        <Input
+          placeholder="Filtrar por nome..."
+          value={nameFilter}
+          onChange={(e) => setNameFilter(e.target.value)}
+          className="max-w-sm outline-blue-700 border-blue-700"
+        />
       </div>
       <div className="rounded-lg overflow-hidden shadow">
         <Table className="font-normal overflow-hidden">
@@ -209,10 +207,7 @@ export function TableDocumentosAdmin() {
                   >
                     {header.isPlaceholder
                       ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
+                      : flexRender(header.column.columnDef.header, header.getContext())}
                   </TableHead>
                 ))}
               </TableRow>

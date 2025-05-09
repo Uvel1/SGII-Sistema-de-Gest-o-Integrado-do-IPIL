@@ -3,16 +3,14 @@ import { StatusCodes } from "http-status-codes";
 import nodemailer from "nodemailer";
 import { prisma } from "../../config/prisma.config";
 
-// Configuração do transporter do nodemailer utilizando o serviço Gmail
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
-    user: process.env.EMAIL_USER, // Ex.: ipilsgi@gmail.com
-    pass: process.env.EMAIL_PASS, // Senha de aplicativo gerada para o Gmail
+    user: process.env.EMAIL_USER, 
+    pass: process.env.EMAIL_PASS, 
   },
 });
 
-// Função auxiliar para enviar e-mail
 async function sendEmail(to: string, subject: string, text: string) {
   await transporter.sendMail({
     from: process.env.EMAIL_USER,
@@ -33,7 +31,6 @@ export const enviarEmail = async (req: Request, res: Response) => {
       });
     }
 
-    // Busca o pedido para obter o aluno_id
     const pedido = await prisma.solicitacao_aluno.findUnique({
       where: { id: Number(id) },
       select: { aluno_id: true },
@@ -45,7 +42,6 @@ export const enviarEmail = async (req: Request, res: Response) => {
       });
     }
 
-    // Busca o email do aluno na tabela de usuários
     const aluno = await prisma.usuarios.findUnique({
       where: { id: pedido.aluno_id },
       select: { email: true },
@@ -57,7 +53,6 @@ export const enviarEmail = async (req: Request, res: Response) => {
       });
     }
 
-    // Envia o email com a resposta
     await sendEmail(
       aluno.email,
       "Resposta ao seu pedido",

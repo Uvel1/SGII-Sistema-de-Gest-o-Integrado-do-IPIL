@@ -12,9 +12,8 @@ declare module 'express' {
     }
   }
 
-// Função que verifica o token JWT
 export const authenticateJWT = (req: Request, res: Response, next: NextFunction) => {
-  const token = req.header('Authorization')?.replace('Bearer ', ''); // Obtém o token do cabeçalho
+  const token = req.header('Authorization')?.replace('Bearer ', ''); 
 
   if (!token) {
     return res.status(StatusCodes.FORBIDDEN).json({
@@ -25,10 +24,9 @@ export const authenticateJWT = (req: Request, res: Response, next: NextFunction)
   }
 
   try {
-    // Verifica se o token é válido
-    const decoded = jwt.verify(token, process.env.JWT_SECRET as string); // Substitua pelo seu segredo
-    req.user = decoded as { uid: number; nome: string; tipo?: string }; // Atribui o payload do token à requisição
-    next(); // Passa o controle para a próxima função de middleware ou rota
+    const decoded = jwt.verify(token, process.env.JWT_SECRET as string);
+    req.user = decoded as { uid: number; nome: string; tipo?: string };
+    next();
   } catch (error) {
     return res.status(StatusCodes.UNAUTHORIZED).json({
       errors: {

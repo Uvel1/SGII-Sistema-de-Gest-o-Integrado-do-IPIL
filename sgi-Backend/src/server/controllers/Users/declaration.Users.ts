@@ -42,7 +42,6 @@ async function gerarPDF(
     },
     logoPath: string
   ): Promise<Buffer> {
-    // Lê a imagem do logo e converte para base64
     let logoBase64 = "";
     try {
       const imageBuffer = fs.readFileSync(logoPath);
@@ -51,13 +50,11 @@ async function gerarPDF(
       console.error("Erro ao carregar a imagem", err);
     }
   
-    // Função para formatar notas: se menor que 10, exibe em vermelho; se não houver valor, exibe hífen
     const formatNota = (nota: number | undefined) => {
       if (nota == null) return '-';
       return nota < 10 ? `<span style="color:red;">${nota}</span>` : `${nota}`;
     };
   
-    // Exemplo de disciplinas e notas por trimestre, exame e final.
     const disciplinas = [
       { nome: 'PORTUGUÊS', t1: 13, t2: 12, t3: 14, exame: 12, final: 13 },
       { nome: 'INGLÊS', t1: 10, t2: 10, t3: 11, exame: 13, final: 11 },
@@ -77,7 +74,6 @@ async function gerarPDF(
       { nome: 'PROJECTO TECNOLÓGICO', t1: 13, t2: 14, t3: 12, exame: 10, final: 12 },
     ];
     
-    // Monta as linhas da tabela em HTML utilizando a função formatNota
     const linhasDisciplinas = disciplinas.map((disc) => {
       return `
         <tr>
@@ -92,7 +88,6 @@ async function gerarPDF(
       `;
     }).join('');
     
-    // Cria o template HTML com estilos para o PDF
     const html = `
       <!DOCTYPE html>
   <html>
@@ -216,7 +211,6 @@ async function gerarPDF(
     try {
       const { id } = req.params;
   
-      // Busca o pedido para obter o aluno_id
       const pedido = await prisma.solicitacao_aluno.findUnique({
         where: { id: Number(id) },
         select: { aluno_id: true },
@@ -230,7 +224,6 @@ async function gerarPDF(
   
       const alunoId = pedido.aluno_id;
   
-      // Query raw para buscar todos os dados do aluno para preencher a declaração
       const declaracaoData = await prisma.$queryRaw`
         SELECT 
           u.nome AS nomeAluno,
@@ -261,18 +254,15 @@ async function gerarPDF(
         });
       }
   
-      // Define a data do documento como a data atual por extenso (ex.: "25 de Outubro de 2024")
       const dataDocumento = new Date().toLocaleDateString('pt-PT', {
         day: '2-digit',
         month: 'long',
         year: 'numeric'
       });
-      // Adiciona a dataDocumento no objeto de dados para a declaração
       declaracaoData[0].dataDocumento = dataDocumento;
   
       const nomeAluno = declaracaoData[0].nomeAluno;
   
-      // Busca o id do usuário (para associar o documento)
       const usuarioData = await prisma.$queryRaw`
         SELECT u.id FROM usuarios u WHERE u.id = ${alunoId}
       `;
@@ -286,19 +276,15 @@ async function gerarPDF(
       const logoPath = 'src/server/public/assets/República.jpg';
       const pdfBuffer = await gerarPDF(declaracaoData[0], logoPath);
   
-      // Define o diretório onde o documento será salvo
       const documentsFolder = path.join(process.cwd(), 'src', 'server', 'public', 'documents', 'Declarações');
       if (!fs.existsSync(documentsFolder)) {
         fs.mkdirSync(documentsFolder, { recursive: true });
       }
-      // Cria um nome de arquivo único que inclua o nome do aluno
       const fileName = `${nomeAluno.replace(/\s+/g, '_')}_${Date.now()}.pdf`;
       const filePath = path.join(documentsFolder, fileName);
   
-      // Salva o arquivo PDF no backend
       fs.writeFileSync(filePath, pdfBuffer);
   
-      // Insere os dados na tabela documentos_submetidos
       await prisma.documentos_submetidos.create({
         data: {
           url_documento: filePath,

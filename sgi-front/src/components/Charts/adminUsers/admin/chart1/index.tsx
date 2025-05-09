@@ -6,41 +6,39 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import { TrendingUp } from "lucide-react"
 
-interface SolicitacaoData {
-  estado: string
+interface DocumentoData {
+  tipo_documento: string
   total: number
 }
 
 const chartConfig: ChartConfig = {
-  pedidos: {
-    label: "Pedidos",
+  documentos: {
+    label: "Documentos",
     color: "#1d4ed8",
   },
 }
 
 export function Chart1() {
-  const [chartData, setChartData] = useState<SolicitacaoData[]>([])
+  const [chartData, setChartData] = useState<DocumentoData[]>([])
 
   useEffect(() => {
     async function fetchData() {
       try {
-        const response = await fetch("http://localhost:3333/Chart_pedidos")
-if (!response.ok) {
-  // Se a resposta não for ok, obtenha o texto e logue para depurar
-  const errorText = await response.text()
-  console.error("Erro na requisição:", errorText)
-  return
-}
-const data = await response.json()
-
-        // Caso haja conversão de BigInt, garantimos que total seja Number.
-        const safeData = data.map((row: any) => ({
-          estado: row.estado,
+        const response = await fetch("http://localhost:3333/chartDocSub")
+        if (!response.ok) {
+          const errorText = await response.text()
+          console.error("Erro na requisição:", errorText)
+          return
+        }
+        const data = await response.json()
+        
+        const safeData = data.data.map((row: any) => ({
+          tipo_documento: row.tipo_documento,
           total: Number(row.total),
         }))
         setChartData(safeData)
       } catch (error) {
-        console.error("Erro ao buscar dados de solicitações:", error)
+        console.error("Erro ao buscar dados de documentos:", error)
       }
     }
     fetchData()
@@ -49,9 +47,9 @@ const data = await response.json()
   return (
     <Card>
       <CardHeader className="items-center pb-4">
-        <CardTitle>Pedidos por Estado</CardTitle>
+        <CardTitle>Documentos por Tipo</CardTitle>
         <CardDescription>
-          Quantidade de pedidos agrupados por estado
+          Quantidade de documentos submetidos por tipo
         </CardDescription>
       </CardHeader>
       <CardContent className="pb-0">
@@ -61,11 +59,11 @@ const data = await response.json()
         >
           <RadarChart data={chartData}>
             <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
-            <PolarGrid className="fill-[--color-pedidos] opacity-20" gridType="circle" />
-            <PolarAngleAxis dataKey="estado" />
+            <PolarGrid className="fill-[--color-documentos] opacity-20" gridType="circle" />
+            <PolarAngleAxis dataKey="tipo_documento" />
             <Radar
               dataKey="total"
-              fill="var(--color-pedidos)"
+              fill="var(--color-documentos)"
               fillOpacity={0.5}
             />
           </RadarChart>

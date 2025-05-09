@@ -23,7 +23,7 @@ export const IdDeleteValidation = validation((getSchema) => ({
 }));
 
 export const Delete = async (req: Request<IParams>, res: Response) => {
-  const id = Number(req.params.id); // Converte id para número
+  const id = Number(req.params.id); 
 
   if (isNaN(id)) {
     return res.status(StatusCodes.BAD_REQUEST).json({
@@ -32,7 +32,6 @@ export const Delete = async (req: Request<IParams>, res: Response) => {
   }
 
   try {
-    // Verifica se a solicitação existe
     const teacher = await prisma.professor_detalhes.findUnique({
       where: { id },
     });
@@ -43,12 +42,10 @@ export const Delete = async (req: Request<IParams>, res: Response) => {
       });
     }
 
-    // Deleta a solicitação permanentemente do banco de dados
     await prisma.professor_detalhes.delete({
       where: { id },
     });
 
-    // Chama a função de atualização via WebSocket
     await ProfessoresController.sendTeachersUpdate();
 
     return res.status(StatusCodes.OK).json({ message: "Solicitação excluída permanentemente com sucesso." });

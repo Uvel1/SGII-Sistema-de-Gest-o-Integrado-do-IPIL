@@ -5,7 +5,6 @@ import { prisma } from "../../config/prisma.config";
 export const getUserPhoto = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    // Utilizando uma query raw para buscar o campo 'foto_perfil' na tabela 'usuarios'
     const results = await prisma.$queryRaw<{ foto_perfil: string }[]>`
       SELECT foto_perfil
       FROM usuarios

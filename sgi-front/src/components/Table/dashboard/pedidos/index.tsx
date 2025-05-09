@@ -159,7 +159,7 @@ export function TableAdminPedidos() {
   const filteredData = React.useMemo(() => {
     return data.filter((student) => {
       const matchesTurma = selectedTurma === "All" || student.tipo === selectedTurma;
-      const matchesName = student.tipo.toLowerCase().includes(nameFilter.toLowerCase());
+      const matchesName = student.aluno.nome.toLowerCase().includes(nameFilter.toLowerCase());
       return matchesTurma && matchesName;
     });
   }, [data, selectedTurma, nameFilter]);
@@ -198,7 +198,7 @@ export function TableAdminPedidos() {
           <option value="Outros">Outros</option>
         </select>
         <Input
-          placeholder="Filtrar por tipo..."
+          placeholder="Filtrar por nome..."
           value={nameFilter}
           onChange={(e) => setNameFilter(e.target.value)}
           className="max-w-sm outline-blue-700 border-blue-700"

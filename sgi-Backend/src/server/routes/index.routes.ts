@@ -27,6 +27,8 @@ const storage = multer.diskStorage({destination: (req, file, cb) => {
   
 const upload = multer({ storage });
 
+
+
 //Requests(This controllers doesn't exist, just for requests that has both, students a school requests)
 router.get('/chart2',StudentsRequestsController.getChart2);
 router.get('/Chart_pedidos',StudentsRequestsController.GetRequests);
@@ -41,6 +43,7 @@ router.put('/update_pedido/:id',StudentsRequestsController.UpdateSolicitacaoVali
 //SchoolRequest
 
 //Users
+router.get('/tabela_usuarios',UsersController.getUsers);
 router.get('/refreshToken',UsersController.refreshToken);
 router.get('/user/photo/:id', UsersController.getUserPhoto);
 router.post('/enviar_email/:id',UsersController.enviarEmail);
@@ -63,6 +66,10 @@ router.get('/tabela_notas/:id',GradesController.IdStudentValidation, GradesContr
 
 //TeachersDetails
 router.get('/tabela_professores',TeachersDetailsController.getTabelaProfessores);
+router.get('/print/:professorId/:turmaId',TeachersDetailsController.imprimirRelatorioTurma);
+router.get('/professores/:id/relatorio',TeachersDetailsController.gerarRelatorioPorProfessor);
+router.get('/professores/:id/stats/aprovacao',TeachersDetailsController.getApprovalStats);
+router.get("/professores/:id/stats/faltas",TeachersDetailsController.getFaltasStats);
 router.delete('/professore/:id',TeachersDetailsController.IdDeleteValidation,TeachersDetailsController.Delete);
 
 //StudentsDetails
@@ -73,7 +80,7 @@ router.post('/declaracao',StudentsDetailsController.declaraçãoValidation,Stude
 router.post('/verificar',StudentsDetailsController.VerificationValidation,StudentsDetailsController.Verification);
 router.post('/certificado',StudentsDetailsController.RequestCertificateValidation,StudentsDetailsController.RequestCertificate);
 
-//FiledsOfStudy
+//FieldsOfStudy
 router.get('/chartArea',FiledsOfStudyController.ChartFiels);
 
 //SubmittedDocuments
@@ -81,5 +88,8 @@ router.get('/docs',SubmittedDocumentsController.docs);
 router.get('/chartDocSub',SubmittedDocumentsController.documentsByType);
 router.get('/print/:id',SubmittedDocumentsController.IdPrintValidationDoc,SubmittedDocumentsController.PrintDoc);
 router.delete("/documentos/:id", SubmittedDocumentsController.IdDeleteValidationDoc, SubmittedDocumentsController.DeleteDoc);
+router.post('/pedidos/:id/import',upload.single('file'),SubmittedDocumentsController.importDoc);
+router.get('/documents/download/:id',SubmittedDocumentsController.IdPrintValidationDoc,SubmittedDocumentsController.DownloadDoc);
+  
 
 export {router};

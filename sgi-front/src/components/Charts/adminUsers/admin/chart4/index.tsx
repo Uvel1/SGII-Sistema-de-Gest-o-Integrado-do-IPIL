@@ -13,32 +13,33 @@ import {
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
-// Mapeamento de cores para cada tipo de documento
+// Cores para diferentes estados
 const colorMap: Record<string, string> = {
-  Certificado: "#1d4ed8",    // Azul escuro
-  Declaração: "#3b82f6",     // Azul médio
-  Transferência: "#22c55e",  // Verde
-  Outro: "#f59e0b",          // Laranja
+  Pendente: "#f59e0b",
+  Aprovado: "#22c55e",
+  Rejeitado: "#ef4444",
+  Processando: "#3b82f6"
 };
 
 export function ChartDocumentosSubmetidosPorTipo() {
-  // Supondo que o endpoint retorne um objeto com a propriedade "data"
-  // e que "data" seja um array de objetos com { tipo_documento, total }
-  const { data, error } = useSWR("http://localhost:3333/chartDocSub", fetcher);
+  const { data, error } = useSWR("http://localhost:3333/Chart_pedidos", fetcher);
 
   if (error) return <div>Erro ao carregar dados</div>;
   if (!data) return <div>Carregando...</div>;
 
-  // Garante que os dados estejam encapsulados na propriedade "data"
-  const chartData = Array.isArray(data.data) ? data.data : [];
-  if (chartData.length === 0) return <div>Formato de dados inesperado.</div>;
+  const chartData = Array.isArray(data) ? data.map((item: any) => ({
+    estado: item.estado,
+    total: Number(item.total)
+  })) : [];
+
+  if (chartData.length === 0) return <div>Nenhum dado disponível</div>;
 
   return (
     <Card className="flex flex-col">
       <CardHeader className="flex flex-col items-center">
-        <CardTitle>Total de Documentos Submetidos por Tipo</CardTitle>
+        <CardTitle>Pedidos por Estado</CardTitle>
         <CardDescription>
-          Quantidade de documentos submetidos agrupados por tipo.
+          Distribuição de pedidos por estado atual
         </CardDescription>
       </CardHeader>
       <CardContent className="flex justify-center">
@@ -46,21 +47,21 @@ export function ChartDocumentosSubmetidosPorTipo() {
           <Pie
             data={chartData}
             dataKey="total"
-            nameKey="tipo_documento"
+            nameKey="estado"
             cx="50%"
             cy="50%"
             outerRadius={100}
             label
           >
             {chartData.map((entry, index) => (
-              <Cell
-                key={`cell-${index}`}
-                fill={colorMap[entry.tipo_documento] || "#ccc"}
+              <Cell 
+                key={`cell-${index}`} 
+                fill={colorMap[entry.estado] || "#94a3b8"} 
               />
             ))}
           </Pie>
           <Tooltip />
-          <Legend verticalAlign="bottom" height={36} />
+          <Legend />
         </PieChart>
       </CardContent>
     </Card>

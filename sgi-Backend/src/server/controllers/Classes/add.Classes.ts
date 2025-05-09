@@ -27,7 +27,6 @@ export const CreateClasseValidation = validation((getSchema) => ({
     const { nome, bi, nProc, pedido , email } = req.body;
 
     try {
-    // Verificar se o aluno existe
 const aluno = await prisma.alunos.findUnique({
     where: {
       num_proc: nProc,
